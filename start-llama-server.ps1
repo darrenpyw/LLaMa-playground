@@ -1,9 +1,22 @@
 #Requires -Version 5.0
 
-# LLM Models available for llama-server
+# Huggingface Models available for llama-server
 $llmModels = @(
-    @{ Name = "unsloth Qwen3.5-4B-GGUF"; Path = "unsloth/Qwen3.5-4B-GGUF"; Port = 8000; Context = 65535 },
-    @{ Name = "Unsloth gemma-4-E4B-it-GGUF"; Path = "unsloth/gemma-4-E4B-it-GGUF"; Port = 8000; Config = "-c 65535 --temperature 0.5 --top-p 0.5" }
+    @{ Name = "unsloth Qwen3.5-4B-GGUF";
+        Path = "unsloth/Qwen3.5-4B-GGUF";
+        Port = 8000;
+        Params = @("-c", 65355, "--temperature", 0.5,"--top-p", 0.75)
+    },
+    @{ Name = "Unsloth gemma-4-E4B-it-GGUF:Q3_K_M";
+        Path = "unsloth/gemma-4-E4B-it-GGUF:Q3_K_M";
+        Port = 8000;
+        Params = @("-c", 32768, "--temperature", 0.5,"--top-p", 0.5, "--fit", "off")
+    },
+    @{ Name = "unsloth gemma-4-E2B-it-GGUF";
+        Path = "unsloth/gemma-4-E2B-it-GGUF";
+        Port = 8000;
+        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25,, "--fit", "off")
+    }
 )
 
 # Display menu
@@ -32,12 +45,12 @@ if ($selection -ge 1 -and $selection -le $llmModels.Count) {
     Write-Host "`nStarting llama-server with $($selectedModel.Name)..." -ForegroundColor Green
     Write-Host "Model: $($selectedModel.Path)" -ForegroundColor Gray
     Write-Host "Port: $($selectedModel.Port)" -ForegroundColor Gray
-    Write-Host "Context: $($selectedModel.Config)" -ForegroundColor Gray
+    Write-Host "Params: $($selectedModel.Params)" -ForegroundColor Gray
     Write-Host "`n"
     
-    # Start llama-server (adjust path as needed)
-    #& "llama-server.exe" -hf $selectedModel.Path --host 0.0.0.0 --port $selectedModel.Port -c $selectedModel.Context
-    & "llama-server.exe" --models-dir "C:\Users\Pre-Installed User\.cache\huggingface\hub" --host 0.0.0.0 --port 8000
+    # Start llama-server
+    & llama-server -hf $selectedModel.Path --host 0.0.0.0 --port $selectedModel.Port $selectedMode.Params
+    #& "llama-server.exe" --models-dir "C:\Users\Pre-Installed User\.cache\huggingface\hub" --host 0.0.0.0 --port 8000
     
 } else {
     Write-Host "Invalid selection. Please run the script again." -ForegroundColor Red
