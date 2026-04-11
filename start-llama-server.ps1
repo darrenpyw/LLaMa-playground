@@ -15,8 +15,15 @@ $llmModels = @(
     @{ Name = "unsloth gemma-4-E2B-it-GGUF";
         Path = "unsloth/gemma-4-E2B-it-GGUF";
         Port = 8000;
-        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25,, "--fit", "off")
+        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25, "--fit", "off")
+    },
+    @{ Name = "unsloth gemma-4-E2B-it-GGUF Tuning";
+        Path = "unsloth/gemma-4-E2B-it-GGUF";
+        Port = 8000;
+        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25, "--fit", "off", "-nkvo", "-np", 4, "--jinja", "-ctk", "q4_0", "-ctv", "q4_0")
     }
+
+    
 )
 
 # Display menu

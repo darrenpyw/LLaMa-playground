@@ -1,3 +1,2 @@
-requests
-ToolAgents
+ToolAgents==0.3.0
 mistralai==1.9.11
