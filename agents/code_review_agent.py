@@ -5,22 +5,29 @@ from ToolAgents.function_tool import ToolRegistry
 
 from tools.tools import (
     timing_decorator,
-    current_datetime_function_tool
+    current_datetime_function_tool,
+    write_file_tool
 )
 
 @timing_decorator
-def task(agent):
-    um = ChatMessage.create_user_message("Analyze the file for security misconfigurations and write output to file with filename as '<current_timestamp>-<analyzed_filename>.md")
-    um.add_text_file_data(file="..\\samples\\nginx.conf")
+def task(agent, path):
+    um = ChatMessage.create_user_message(f"""
+    Analyze the file {path} for security misconfigurations and output in markdown format with current timestamp.
+    First, retrieve the current time in the format: %Y-%m-%d_%H-%M.
+    Then write the analysis to a file named '<retrieved_timestamp>-<file_analyzed>.md' (replace <retrieved_timestamp> with the actual timestamp, replace <file_analyzed> with the actual filename analyzed).
+    """)
+    um.add_text_file_data(file=path)
     
     messages = [
-        ChatMessage.create_system_message("You are a cyber security expert in reviewing source code and infrastructure configurations with tool calling capabilities. Respond with professional tone and do not use emojis"),
+        ChatMessage.create_system_message("You are a cyber security expert in reviewing source code and infrastructure configurations with tool calling capabilities. Respond professionally and do not use emojis"),
         um,
     ]
     
     tools = [
-        current_datetime_function_tool
+        current_datetime_function_tool,
+        write_file_tool
     ]
+    
     tool_registry = ToolRegistry()
 
     tool_registry.add_tools(tools)
@@ -42,7 +49,13 @@ def main():
         )
     # Create the ChatAPIAgent
     agent = ChatToolAgent(chat_api=api)
-    task(agent)
+
+    paths = ["..\\samples\\nginx.conf",
+             "..\\samples\\app.py"
+             ]
+    
+    for path in paths:
+        task(agent, path)
 
 if __name__ == "__main__":
     main()
