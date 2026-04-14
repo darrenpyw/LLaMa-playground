@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import argparse
+import sys
 from pathlib import Path
 from ToolAgents.provider import OpenAIChatAPI
 from ToolAgents.agents import ChatToolAgent
@@ -18,12 +19,48 @@ def task(agent, settings, path):
     logging.debug(f"Processing file: {path}")
 
     um = ChatMessage.create_user_message(f"""
-    Analyze the file {path} for security misconfigurations and output in markdown format with current timestamp.
+    Analyze the attached file {path} for security misconfigurations.
+    The file content is delimited between <FILE_CONTENT_START> and <FILE_CONTENT_END>.
     First, retrieve the current time in the format: %Y-%m-%d_%H-%M.
-    Then write the analysis to a file named '<retrieved_timestamp>-<file_analyzed>.md' (replace <retrieved_timestamp> with the actual timestamp, replace <file_analyzed> with the actual filename analyzed).
+    Then write the analysis to a file named '<retrieved_timestamp>-<file_analyzed>.md' (replace <retrieved_timestamp> with the actual timestamp, replace <file_analyzed> with the actual filename).
+    
+    Use the following sample as the template for markdown output:
+    **File Analyzed:** `../damn-vulnerable-defi/src/abi-smuggling/AuthorizedExecutor.sol`
+    **Analysis Timestamp:** 2026-04-13_16-54
+    ## Findings
+
+    ### 1. Potential Abstraction/Access Control Flaw in `execute` function [Impact - HIGH]
+
+    The `execute` function relies on a mapping `permissions` to authorize arbitrary function calls. 
+    
+    **Vulnerability Context:**
+    The core security relies on `permissions[getActionId(selector, msg.sender, target)]` correctly checking if the current caller is authorized to execute the specified action on the target.
+
+    **Potential Issue (Abuse via `getActionId`):**
+    The `getActionId` function computes the permission key as:
+    `keccak256(abi.encodePacked(selector, executor, target))`
+
+    **Recommendation:**
+    1. **Input Validation:** Ensure that the `selector` extracted from `actionData` is a valid function selector for a known interface or contract, preventing the execution of arbitrary, unintended code if the logic for deriving the permission key is flawed.
+    2. **Permission Granularity Review:** Thoroughly audit the `permissions` mapping to ensure that permissions are correctly set during `setPermissions` and that no unintended combinations grant access.
+
+    ### 2. Calldata Offset Calculation [Impact - LOW]
+
+    The calculation for `calldataOffset` is:
+    `uint256 calldataOffset = 4 + 32 * 3;`
+
+    **Vulnerability Context:**
+    If the actual ABI encoding of `actionData` deviates from this assumption (e.g., a different function signature requiring more or fewer parameters), the offset calculation will be incorrect. This could lead to:
+    *   **Information Leakage:** Reading unintended data from memory.
+    
+    **Recommendation:**
+    Use a more robust method for determining the offset based on the actual function signature or dynamic decoding if the contract supports it, rather than relying on fixed magic numbers for ABI parsing.
+
     """)
     
-    um.add_text_file_data(file=path)
+    um.add_text_file_data(file=path,
+                          content_prefix = "<FILE_CONTENT_START>",
+                          content_suffix = "<FILE_CONTENT_END")
     
     messages = [
         ChatMessage.create_system_message("""
@@ -50,12 +87,12 @@ def task(agent, settings, path):
     
 
 @timing_decorator
-async def main(args):
+async def main(paths):
     # Local OpenAI-compatible API, like vllm or llama-cpp-server
     api = OpenAIChatAPI(
         api_key="",
         base_url="http://127.0.0.1:8000/v1",
-        model="unsloth/gemma-4-E2B-it-GGUF",
+        model="unsloth/gemma-4-E4B-it-GGUF:Q4_K_M",
         )
     
     settings = api.get_default_settings()
@@ -67,19 +104,6 @@ async def main(args):
     # Create the ChatAPIAgent
     agent = ChatToolAgent(chat_api=api)
     
-    # paths = ["..\\samples\\nginx.conf",
-    #          "..\\samples\\app.py"
-    #          ]
-    
-    paths = []
-
-    if args.filename:
-        paths.extend(args.filename)
-    if args.directory:
-        paths.extend([child for child in sorted(Path(args.directory).rglob('*')) if child.suffix in {".sol", ".py", ".conf", ".c", ".cpp", ".js", ".json"}])
-
-    for path in paths:
-        print(path)
     semaphore = asyncio.Semaphore(4)
     
     async def bounded_task(path):
@@ -100,6 +124,22 @@ if __name__ == "__main__":
     parser.add_argument("filename", nargs='*', help="filename(s) to review")
     parser.add_argument("-d", "--directory", help="directory for recursively reviewing all files")
     args = parser.parse_args()
-    if len(vars(args)) <= 0:
+    
+    if len(args.filename) == 0 and args.directory is None:
         parser.print_help()
-    asyncio.run(main(args))
+        sys.exit()
+        
+    paths = []
+    logging.debug(f"filename: {len(args.filename)}")
+    logging.debug(f"directory: {args.directory}, {type(args.directory)} ")
+
+    if args.filename:
+        paths.extend([file for file in args.filename if Path(file).exists()])
+    elif args.directory is not None:
+        paths.extend([child for child in sorted(Path(args.directory).rglob('*')) if child.suffix in {".sol", ".py", ".conf", ".c", ".cpp", ".js", ".json"}])
+    
+    if len(paths) == 0:
+        print("Invalid filename or directory")
+        sys.exit()
+
+    asyncio.run(main(paths))
