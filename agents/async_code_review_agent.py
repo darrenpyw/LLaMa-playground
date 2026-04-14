@@ -79,12 +79,15 @@ def task(agent, settings, path):
 
     tool_registry.add_tools(tools)
     
-    result = agent.get_response(
-        messages=messages,
-        settings=settings,
-        tool_registry=tool_registry
-    )
-    
+    try:
+        response = agent.get_response(
+            messages=messages,
+            settings=settings,
+            tool_registry=tool_registry
+        )
+        logging.debug(response.response)
+    except Exception as e:
+        logging.exception(f"Error: {e}")
 
 @timing_decorator
 async def main(paths):
@@ -102,7 +105,7 @@ async def main(paths):
     settings.top_p = 1.0
 
     # Create the ChatAPIAgent
-    agent = ChatToolAgent(chat_api=api)
+    agent = ChatToolAgent(chat_api=api, log_to_file=False, log_output=False)
     
     semaphore = asyncio.Semaphore(4)
     
