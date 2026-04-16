@@ -7,22 +7,26 @@ $llmModels = @(
         Port = 8000;
         Params = @("-c", 65355, "--temperature", 0.5,"--top-p", 0.75)
     },
-    @{ Name = "Unsloth gemma-4-E4B-it-GGUF:Q3_K_M";
-        Path = "unsloth/gemma-4-E4B-it-GGUF:Q3_K_M";
+    @{ Name = "Unsloth gemma-4-E4B-it-GGUF Q4_K_M";
+        Path = "unsloth/gemma-4-E4B-it-GGUF:Q4_K_M";
         Port = 8000;
-        Params = @("-c", 32768, "--temperature", 0.5,"--top-p", 0.5, "--fit", "off")
+        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.75, "--fit", "off", "-nkvo", "-np", 4, "--jinja")
     },
     @{ Name = "unsloth gemma-4-E2B-it-GGUF";
         Path = "unsloth/gemma-4-E2B-it-GGUF";
         Port = 8000;
-        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25, "--fit", "off")
+        Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25, "--fit", "off", "-nkvo", "-np", 4, "--jinja", "-ctk", "q4_0", "-ctv", "q4_0")
     },
     @{ Name = "unsloth gemma-4-E2B-it-GGUF Tuning";
         Path = "unsloth/gemma-4-E2B-it-GGUF";
         Port = 8000;
         Params = @("-c", 32768, "--temperature", 0.75,"--top-p", 0.25, "--fit", "off", "-nkvo", "-np", 4, "--jinja", "-ctk", "q4_0", "-ctv", "q4_0")
+    },
+    @{ Name = "unsloth gemma-4-E4B-it-GGUF UD-Q4_K_XL";
+        Path = "unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL";
+        Port = 8000;
+        Params = @("-nkvo", "-np", 4, "--jinja", "-ctk", "q4_0", "-ctv", "q4_0")
     }
-
     
 )
 
@@ -43,7 +47,7 @@ if ($selection -eq ($llmModels.Count + 1)) {
 }
 
 # Get WSL ethernet IP address
-$wslIp =  Get-NetIPAddress |  Where-Object { $_.InterfaceAlias -eq "vEthernet (WSL (Hyper-V firewall))" -and $_.AddressFamily -eq "IPv4" } | Select-Object -ExpandProperty IPAddress
+# $wslIp =  Get-NetIPAddress |  Where-Object { $_.InterfaceAlias -eq "vEthernet (WSL (Hyper-V firewall))" -and $_.AddressFamily -eq "IPv4" } | Select-Object -ExpandProperty IPAddress
 
 if ($selection -ge 1 -and $selection -le $llmModels.Count) {
     $selectedIndex = $selection - 1

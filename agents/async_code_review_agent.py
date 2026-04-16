@@ -24,12 +24,12 @@ def task(agent, settings, path):
     First, retrieve the current time in the format: %Y-%m-%d_%H-%M.
     Then write the analysis to a file named '<retrieved_timestamp>-<file_analyzed>.md' (replace <retrieved_timestamp> with the actual timestamp, replace <file_analyzed> with the actual filename).
     
-    Use the following sample as the template for markdown output:
+    Strictly use the example template below for markdown output:
     **File Analyzed:** `../damn-vulnerable-defi/src/abi-smuggling/AuthorizedExecutor.sol`
     **Analysis Timestamp:** 2026-04-13_16-54
     ## Findings
 
-    ### 1. Potential Abstraction/Access Control Flaw in `execute` function [Impact - HIGH]
+    ### 1. Abstraction/Access Control Flaw in `execute` function [Impact - HIGH]
 
     The `execute` function relies on a mapping `permissions` to authorize arbitrary function calls. 
     
@@ -40,27 +40,20 @@ def task(agent, settings, path):
     The `getActionId` function computes the permission key as:
     `keccak256(abi.encodePacked(selector, executor, target))`
 
+    **Proof of Concept Exploit Code:**
+    ```
+    Vulnerability exploit code
+    ```
+
     **Recommendation:**
     1. **Input Validation:** Ensure that the `selector` extracted from `actionData` is a valid function selector for a known interface or contract, preventing the execution of arbitrary, unintended code if the logic for deriving the permission key is flawed.
     2. **Permission Granularity Review:** Thoroughly audit the `permissions` mapping to ensure that permissions are correctly set during `setPermissions` and that no unintended combinations grant access.
-
-    ### 2. Calldata Offset Calculation [Impact - LOW]
-
-    The calculation for `calldataOffset` is:
-    `uint256 calldataOffset = 4 + 32 * 3;`
-
-    **Vulnerability Context:**
-    If the actual ABI encoding of `actionData` deviates from this assumption (e.g., a different function signature requiring more or fewer parameters), the offset calculation will be incorrect. This could lead to:
-    *   **Information Leakage:** Reading unintended data from memory.
-    
-    **Recommendation:**
-    Use a more robust method for determining the offset based on the actual function signature or dynamic decoding if the contract supports it, rather than relying on fixed magic numbers for ABI parsing.
 
     """)
     
     um.add_text_file_data(file=path,
                           content_prefix = "<FILE_CONTENT_START>",
-                          content_suffix = "<FILE_CONTENT_END")
+                          content_suffix = "<FILE_CONTENT_END>")
     
     messages = [
         ChatMessage.create_system_message("""
