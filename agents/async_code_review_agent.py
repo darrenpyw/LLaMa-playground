@@ -19,7 +19,8 @@ def task(agent, settings, path):
     logging.debug(f"Processing file: {path}")
 
     um = ChatMessage.create_user_message(f"""
-    Analyze the attached file {path} for security misconfigurations.
+    Analyze the attached file {path} for security vulnerabilities and misconfigurations.
+    For C programs, focus on finding stack buffer overflow vulnerabilities.
     The file content is delimited between <FILE_CONTENT_START> and <FILE_CONTENT_END>.
     First, retrieve the current time in the format: %Y-%m-%d_%H-%M.
     Then write the analysis to a file named '<retrieved_timestamp>-<file_analyzed>.md' (replace <retrieved_timestamp> with the actual timestamp, replace <file_analyzed> with the actual filename).
@@ -98,7 +99,7 @@ async def main(paths):
     settings.top_p = 1.0
 
     # Create the ChatAPIAgent
-    agent = ChatToolAgent(chat_api=api, log_to_file=False, log_output=False)
+    agent = ChatToolAgent(chat_api=api, log_to_file=True, log_output=True)
     
     semaphore = asyncio.Semaphore(4)
     
@@ -111,7 +112,14 @@ async def main(paths):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename=Path.cwd() / "output" / "runtime.log", format='%(asctime)s - %(funcName)s: %(message)s', level=logging.DEBUG)
+    # Specify and create the directory
+    log_dir = Path.cwd() / "output"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    # Define the full path for the log file
+    log_file = log_dir / "runtime.log"
+
+    logging.basicConfig(filename=log_file, format='%(asctime)s - %(funcName)s: %(message)s', level=logging.DEBUG)
 
     parser = argparse.ArgumentParser(
         prog = 'Asynchoronous Code Review Agent',
