@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Damn Vulnerable DeFi v4 (https://damnvulnerabledefi.xyz)
-pragma solidity =0.8.25;
+pragma solidity ^0.8.25;
 
 import {DamnValuableToken} from "../DamnValuableToken.sol";
 import {L1Forwarder} from "../withdrawal/L1Forwarder.sol";
