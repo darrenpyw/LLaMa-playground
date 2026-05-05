@@ -25,7 +25,7 @@ $llmModels = @(
     @{ Name = "unsloth gemma-4-E4B-it-GGUF UD-Q4_K_XL";
         Path = "unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL";
         Port = 8000;
-        Params = @("-nkvo", "-np", 4, "--jinja", "-ctk", "q4_0", "-ctv", "q4_0")
+        Params = @("-nkvo", "-np", 4, "--jinja", "--no-mmproj", "-ctk", "q4_0", "-ctv", "q4_0")
     }
     
 )
