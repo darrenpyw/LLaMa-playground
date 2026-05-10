@@ -33,6 +33,10 @@ class WriteFileInput(BaseModel):
     filename: str = Field(..., description="The name of the file to write to")
     content: str = Field(..., description="The content to write to the file")
 
+class ReadFileInput(BaseModel):
+    """Input for reading from a file."""
+
+    filename: str = Field(..., description="The name of the file to read from")
 
 def get_current_datetime(output_format: str):
     """
@@ -63,8 +67,27 @@ def write_file(input_data: WriteFileInput) -> str:
     except Exception as e:
         return f"Error writing to file: {str(e)}"
 
+
+def read_file(input_data: ReadFileInput) -> str:
+    """
+    Read content from a file.
+    Args:
+        input_data: The input for the file read operation.
+    Returns:
+        A string indicating the result of the operation.
+    """
+    try:
+        with open(input_data.filename, "r") as file:
+            return file.read()
+    except FileNotFoundError as e:
+        return f"Error reading from file: {str(e)}"
+
+
 current_datetime_function_tool = FunctionTool(get_current_datetime)
 current_datetime_function_tool.disable_confirmation()
 
 write_file_tool = FunctionTool(write_file)
 write_file_tool.disable_confirmation()
+
+read_file_tool = FunctionTool(read_file)
+read_file_tool.disable_confirmation()
