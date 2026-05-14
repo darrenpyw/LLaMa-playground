@@ -1,6 +1,6 @@
 # LLaMA-playground
 
-A personal Agentic AI learning project using ToolAgents and local llama.cpp server with huggingface models.
+A personal Agentic AI learning project using ToolAgents and local llama.cpp server with huggingface models. All code for educational purposes only.
 
 
 ## Agents
