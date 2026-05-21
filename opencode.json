@@ -1,0 +1,52 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+   "instructions": [
+    "AGENTS.md"
+  ],
+  "provider": {
+    "llama-local": {
+      "name": "Llama.cpp Local",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "http://172.29.64.1:8000/v1"
+      },
+      "models": {
+        "gemma-4-E4B-it-GGUF": {
+          "name": "unsloth-gemma-4-E4B-it-GGUF",
+          "tool_call": true
+        },
+        "Qwen3.5-4B-Claude-4.6-Opus-Reasoning-Distilled-GGUF::Q4_K_M": {
+          "name": "Jackrong Qwen3.5-4B-Claude-4.6-Opus-Reasoning-Distilled-GGUF",
+          "tool_call": true
+        },
+        "Qwen3-Coder-Next-GGUF": {
+          "name": "Unsloth Qwen3-Coder-Next-GGUF",
+          "tool_call": true
+        },
+        "Qwen3.5-9B-GGUF": {
+          "name": "Unsloth Qwen3.5-9B-GGUF",
+          "tool_call": true
+        },
+        "gemma-4-E2B-it-GGUF": {
+          "name": "Unsloth gemma-4-E2B-it-GGUF",
+          "tool_call": true
+        },
+        "gemma-4-E4B-it-GGUF:UD-Q4_K_XL": {
+          "name": "Unsloth gemma-4-E4B-it-GGUF:UD-Q4_K_XL",
+          "tool_call": true
+        }
+        
+      }
+    }
+  },
+  "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@playwright/mcp@latest"
+      ],
+      "enabled": true
+    }
+  }
+}

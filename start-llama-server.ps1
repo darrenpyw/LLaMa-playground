@@ -2,6 +2,9 @@
 
 # Huggingface Models available for llama-server
 $llmModels = @(
+    @{ Name = "models.ini";
+        Path = "./models.ini";
+    },
     @{ Name = "unsloth Qwen3.5-4B-GGUF";
         Path = "unsloth/Qwen3.5-4B-GGUF";
         Port = 8000;
@@ -25,7 +28,7 @@ $llmModels = @(
     @{ Name = "unsloth gemma-4-E4B-it-GGUF UD-Q4_K_XL";
         Path = "unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL";
         Port = 8000;
-        Params = @("-nkvo", "-np", 4, "--jinja", "--no-mmproj", "-ctk", "q4_0", "-ctv", "q4_0")
+        Params = @("-np", 4, "--jinja", "--no-mmproj", "-ctk", "q4_0", "-ctv", "q4_0", "-cmoe", "--mlock")
     }
     
 )
@@ -48,8 +51,15 @@ if ($selection -eq ($llmModels.Count + 1)) {
 
 # Get WSL ethernet IP address
 # $wslIp =  Get-NetIPAddress |  Where-Object { $_.InterfaceAlias -eq "vEthernet (WSL (Hyper-V firewall))" -and $_.AddressFamily -eq "IPv4" } | Select-Object -ExpandProperty IPAddress
+if ($selection -eq 1 -and $selection -le $llmModels.Count) {
+    $selectedIndex = $selection - 1
+    $selectedModel = $llmModels[0]
+    Write-Host "`nStarting llama-server with $($selectedModel.Path)" -ForegroundColor Green
+    Write-Host "`n"
+    # Start llama-server
+    & llama-server --host 0.0.0.0 --port 8000 --models-preset $($selectedModel.Path)
 
-if ($selection -ge 1 -and $selection -le $llmModels.Count) {
+} elseif ($selection -ge 1 -and $selection -le $llmModels.Count) {
     $selectedIndex = $selection - 1
     $selectedModel = $llmModels[$selectedIndex]
     
