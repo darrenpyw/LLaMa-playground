@@ -1,14 +1,15 @@
 #Requires -Version 5.0
+Set-StrictMode -Version Latest
 
 # Huggingface Models available for llama-server
 $llmModels = @(
     @{ Name = "models.ini";
         Path = "./models.ini";
     },
-    @{ Name = "unsloth Qwen3.5-4B-GGUF";
-        Path = "unsloth/Qwen3.5-4B-GGUF";
+    @{ Name = "unsloth Qwen3.5-4B-MTP-GGUF";
+        Path = "unsloth/Qwen3.5-4B-MTP-GGUF:Q8_0";
         Port = 8000;
-        Params = @("-c", 65355, "--temperature", 0.5,"--top-p", 0.75)
+        Params = @("--jinja", "--no-mmproj", "--temperature", 0.3, "-cmoe", "-cmoe")
     },
     @{ Name = "Unsloth gemma-4-E4B-it-GGUF Q4_K_M";
         Path = "unsloth/gemma-4-E4B-it-GGUF:Q4_K_M";
@@ -70,8 +71,7 @@ if ($selection -eq 1 -and $selection -le $llmModels.Count) {
     Write-Host "`n"
     
     # Start llama-server
-    & llama-server -hf $selectedModel.Path --host 0.0.0.0 --port $selectedModel.Port $selectedMode.Params
-    #& "llama-server.exe" --models-dir "C:\Users\Pre-Installed User\.cache\huggingface\hub" --host 0.0.0.0 --port 8000
+    & llama-server -hf $selectedModel.Path --host 0.0.0.0 --port $selectedModel.Port $selectedModel.Params
     
 } else {
     Write-Host "Invalid selection. Please run the script again." -ForegroundColor Red
