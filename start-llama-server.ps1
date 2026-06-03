@@ -9,7 +9,7 @@ $llmModels = @(
     @{ Name = "unsloth Qwen3.5-4B-MTP-GGUF";
         Path = "unsloth/Qwen3.5-4B-MTP-GGUF:Q8_0";
         Port = 8000;
-        Params = @("--jinja", "--no-mmproj", "--temperature", 0.3, "-cmoe", "-cmoe")
+        Params = @("--jinja", "--no-mmproj", "--temperature", 0.3, "-cmoe")
     },
     @{ Name = "Unsloth gemma-4-E4B-it-GGUF Q4_K_M";
         Path = "unsloth/gemma-4-E4B-it-GGUF:Q4_K_M";
